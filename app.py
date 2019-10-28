@@ -12,13 +12,37 @@ from sklearn.tree import DecisionTreeClassifier
 from xgboost import XGBClassifier
 import lightgbm
 import xgboost as xgb
+from sklearn.preprocessing import LabelEncoder
 from sklearn import metrics
 import ast
 from sklearn.linear_model import ElasticNetCV
 from decorators import upload_file
+from flask import Response, json
+
 
 app = Flask(__name__)
 app.config.from_object(config)
+
+def onehot(df):
+    le = LabelEncoder()
+    le_count = 0
+    y_train = df.iloc[:,-1]
+    # Iterate through the columns
+    for col in df[:-1]:
+        if df[col].dtype == 'object':
+            # If 2 or fewer unique categories
+            if len(list(df[col].unique())) <= 2:
+                # Train on the training data
+                le.fit(df[col])
+                # Transform both training and testing data
+                df[col] = le.transform(df[col])
+
+                # Keep track of how many columns were label encoded
+                le_count += 1
+    # print('%d columns were label encoded.' % le_count)
+    # one-hot encoding of categorical variables
+    x_train = pd.get_dummies(df.iloc[:,:-1])
+    return x_train,y_train
 
 @app.route('/')
 def index():
@@ -53,12 +77,17 @@ def upload():
 @upload_file
 def all():
     request_content=request.form.to_dict()
-    print(session.get('file'))
+    # print(session.get('file'))
     df = pd.read_csv(session.get('file'))
-    X_train = df.iloc[:,:-1]
-    Y_train = df.iloc[:,-1]
+    # print(df.head())
+    # print(df.columns.values[-1])
+    X_train,Y_train = onehot(df)
     LL=[]
     result_dict = {}
+    # result_dict['因变量'] = df.columns.values
+    content = "因变量共有%s项，分别为%s，自变量为%s" % (len(df.columns.values[:-1]), df.columns.values[:-1], df.columns.values[-1])
+    result_dict['content'] = content
+
     for i in request_content.keys():
         if i == 'algor_regression':
             reg = linear_model.LinearRegression()
@@ -66,7 +95,7 @@ def all():
             acc_reg = round(reg.score(X_train,Y_train) * 100, 2)
             LL.append({'algor_regression':acc_reg})
             result_dict["algor_regression"] = acc_reg
-            print(reg)
+            # print(reg)
 
         if i == 'log_regression':
             logreg = LogisticRegression()
@@ -120,18 +149,17 @@ def all():
             result_dict["LGBMClassifier"] = acc_lgb
 
 
-
-    print(str(result_dict).replace('\"','\''))
-    return str(result_dict).replace('\'','\"')
+    return Response(json.dumps(result_dict),content_type='application/json')
+    # print(str(result_dict).replace('\"','\''))
+    # return str(result_dict).replace('\'','\"')
 
 @app.route('/algor/xgboost', methods=['POST'])
 @upload_file
 def algor_xgboost():
     request_content = request.form.to_dict()
-    print(session.get('file'))
+    # print(session.get('file'))
     df = pd.read_csv(session.get('file'))
-    X_train = df.iloc[:, :-1]
-    Y_train = df.iloc[:, -1]
+    X_train,Y_train = onehot(df)
     params = request_content
     if params['num_class'] == "None":
         params.pop('num_class')
@@ -171,10 +199,9 @@ def algor_xgboost():
 @upload_file
 def algor_randomclassifier():
     request_content = request.form.to_dict()
-    print(session.get('file'))
+    # print(session.get('file'))
     df = pd.read_csv(session.get('file'))
-    X_train = df.iloc[:, :-1]
-    Y_train = df.iloc[:, -1]
+    X_train,Y_train = onehot(df)
     params = request_content
     if params['max_depth']!='None':
         params['max_depth'] = int(params['max_depth'])
@@ -217,10 +244,9 @@ def algor_randomclassifier():
 @upload_file
 def algor_dtree():
     request_content = request.form.to_dict()
-    print(session.get('file'))
+    # print(session.get('file'))
     df = pd.read_csv(session.get('file'))
-    X_train = df.iloc[:, :-1]
-    Y_train = df.iloc[:, -1]
+    X_train,Y_train = onehot(df)
     params = request_content
     if params['max_depth'] != 'None':
         params['max_depth'] = int(params['max_depth'])
@@ -263,10 +289,9 @@ def algor_dtree():
 @upload_file
 def algor_logisticRegression():
     request_content = request.form.to_dict()
-    print(session.get('file'))
+    # print(session.get('file'))
     df = pd.read_csv(session.get('file'))
-    X_train = df.iloc[:, :-1]
-    Y_train = df.iloc[:, -1]
+    X_train,Y_train = onehot(df)
     params = request_content
     if params['class_weight'] != 'None':
         if params['class_weight'] == 'balanced':
@@ -299,15 +324,24 @@ def algor_logisticRegression():
                                    )
     model.fit(X_train, Y_train)
     y_pred = model.predict(X_train)
-
-    context = {
-        'algor': '逻辑回归',
-        'roc_AUC': round(metrics.roc_auc_score(Y_train, y_pred), 2),
-        'ACC': round(metrics.accuracy_score(Y_train, y_pred), 2),
-        'Recall': round(metrics.recall_score(Y_train, y_pred), 2),
-        'F1_score': round(metrics.f1_score(Y_train, y_pred), 2),
-        'Precesion': round(metrics.precision_score(Y_train, y_pred), 2),
-    }
+    if len(Y_train.unique())>2:
+        context = {
+            'algor': '逻辑回归',
+            'roc_AUC': 'None(分类目标大于2，无法适用roc_Auc曲线）',
+            'ACC': round(metrics.accuracy_score(Y_train, y_pred), 2),
+            'Recall': round(metrics.recall_score(Y_train, y_pred), 2),
+            'F1_score': round(metrics.f1_score(Y_train, y_pred), 2),
+            'Precesion': round(metrics.precision_score(Y_train, y_pred), 2),
+        }
+    else:
+        context = {
+            'algor': '逻辑回归',
+            'roc_AUC': round(metrics.roc_auc_score(Y_train, y_pred), 2),
+            'ACC': round(metrics.accuracy_score(Y_train, y_pred), 2),
+            'Recall': round(metrics.recall_score(Y_train, y_pred), 2),
+            'F1_score': round(metrics.f1_score(Y_train, y_pred), 2),
+            'Precesion': round(metrics.precision_score(Y_train, y_pred), 2),
+        }
     return render_template('logisticRegression.html', **context)
 
 @app.route('/algor/ElasticNetCV', methods=['POST'])
@@ -315,15 +349,14 @@ def algor_logisticRegression():
 def algor_ElasticNetCV():
     request_content = request.form.to_dict()
     df = pd.read_csv(session.get('file'))
-    X_train = df.iloc[:, :-1]
-    Y_train = df.iloc[:, -1]
+    X_train,Y_train = onehot(df)
     params = request_content
     if params['alpha'] != 'None':
         params['alpha'] = [float(params['alpha'])]
     else:
         params['alpha'] = None
     # print(type(params['max_depth']))
-    print(params['max_iter'])
+    # print(params['max_iter'])
     # elif params['class_weight'] == 'l1':
     # max_iter = int(round(float(params['max_iter'])))
     model = ElasticNetCV(alphas=params['alpha'],

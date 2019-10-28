@@ -202,7 +202,18 @@
 			<div class="slider-info">
 
                 <form action="/upload" method="post" enctype="multipart/form-data" style="width:500px">
-                    <h2>请上传csv/xls等格式的数据文件，同时target应放在最后一列。</h2>
+                    <h2>请上传csv格式的数据文件</h2>
+                    <h4>     注意事项：</h4>
+                    <p>1.目标纬度应放在最后一列</p>
+                    <p>2.注意数据格式，网站会对上传的csv文件内容进行基本数据处理。对于离散变量的纬度，若该纬度有2个分类，例如性别「男，女」将替换为「0，1」；分类超过2个的，将进行one-hot编码处理。</p>
+                    <p>3.预测的目标纬度仅支持2类，且数据格式需自行先行处理，如预测目标有2类商户「a类，b类」，请自行转为「0,1」</p>
+                    <p>4.快速建模是在上传数据后，使用模型默认参数进行建模分析，得到评分。</p>
+
+                    <p></p>
+                    <p>以下为示范数据：</p>
+                    <p>数据源为泰坦尼克号乘客存活数据，根据前面几个纬度（Pclass：几等舱，sex：性别，fare：船票价格）等预测最后一个Survived（0:存活，1：死亡）的值。</p>
+                    <img src="{{ url_for('static',filename='images/data_example.png') }}" alt="">
+                    <hr>
                     <br>
                     <div>
                         <p>
@@ -229,12 +240,12 @@
                         <span style="display:inline-block"><input type="checkbox" name="XGBoost">XGBoost模型</span>
                         <span style="display:inline-block"><input type="checkbox" name="LightGBM">LightGBM</span>
 
-                        <span style="display:inline-block"><input type="range" name="splits" min="0" max="100" value="70"/>训练级占比</span>
+{#                        <span style="display:inline-block"><input type="range" name="splits" min="0" max="100" value="70"/>训练级占比</span>#}
 
 
                     </div>
 
-                        <input style="margin-top: 20px"type="button" class="btn-block" value="开始建模" onclick="start1Request()"/>
+                        <input style="margin-top: 20px"type="button" class="btn-block" value="开始快速建模" onclick="start1Request()"/>
                 </form>
                 <ul id="myList">
 
@@ -1115,15 +1126,15 @@
 <!-- //footer -->
 
 <!-- popup -->
-<div id="popup1" class="popup-effect">
-	<div class="popup">
-		<img src="{{ url_for('static',filename='images/bg.jpg') }}" alt="Popup Image" style="margin-left: 9%"/>
+{#<div id="popup1" class="popup-effect">#}
+{#	<div class="popup">#}
+{#		<img src="{{ url_for('static',filename='images/bg.jpg') }}" alt="Popup Image" style="margin-left: 9%"/>#}
 {#		<p class="mt-4 ">Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque#}
 {#			laudantium, totam rem aperiam, eaque ipsa quae ab illo quasi architecto beatae vitae dicta#}
 {#			sunt explicabo.</p>#}
-		<a class="close" href="#">&times;</a>
-	</div>
-</div>
+{#		<a class="close" href="#">&times;</a>#}
+{#	</div>#}
+{#</div>#}
 <!-- //popup -->
 
 </body>
@@ -1158,7 +1169,7 @@ document.getElementById("_submit").onclick = function(event) {
             alert('上传成功')
             //对请求成功的处理
         } else {
-            alert('上传123')
+            alert('上传失败')
         }
     }
     //将form数据发送出去
@@ -1223,8 +1234,11 @@ document.getElementById("_submit").onclick = function(event) {
             data: $('#form1').serialize(),
             complete: function (result) {
                 console.log(result)
-                {#var json=JSON.parse(result.responseText)#}
                 var json=result.responseJSON
+                alert(json.content)
+                delete json.content;
+                {#var json2=JSON.parse(result.responseText)#}
+                {#alert((json2))#}
             {#var results = result.responseText#}
             {#    var obj = JSON.parse(result.responseText)#}
 
@@ -1236,8 +1250,8 @@ document.getElementById("_submit").onclick = function(event) {
                        ;}
 
 
-                if (result.status == 200) {alert("SUCCESS");}
-                ;
+                {#if (result.status == 200) {alert(result.responseText);}#}
+                {#;#}
             },
 
         }
