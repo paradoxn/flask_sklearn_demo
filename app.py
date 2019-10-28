@@ -3,7 +3,7 @@ import config
 from werkzeug.utils import secure_filename
 from os import path
 import pandas as pd
-from sklearn import linear_model
+from sklearn import linear_model,tree,metrics
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC, LinearSVC
 from sklearn.ensemble import RandomForestClassifier
@@ -13,11 +13,11 @@ from xgboost import XGBClassifier
 import lightgbm
 import xgboost as xgb
 from sklearn.preprocessing import LabelEncoder
-from sklearn import metrics
 import ast
 from sklearn.linear_model import ElasticNetCV
 from decorators import upload_file
 from flask import Response, json
+import graphviz
 
 
 app = Flask(__name__)
@@ -274,6 +274,12 @@ def algor_dtree():
                                    )
     model.fit(X_train, Y_train)
     y_pred = model.predict(X_train)
+    dot_Data = tree.export_graphviz(model, out_file=None, feature_names=X_train.columns.values, class_names=['0', '1'],
+                                    filled=True, rounded=True, special_characters=True)
+    base_path = path.abspath(path.dirname(__file__))
+    upload_path = path.join(base_path, 'static/uploads/images/tree')
+    graph = graphviz.Source(dot_Data)
+    graph.render(upload_path)
 
     context = {
         'algor': '决策树',
@@ -381,6 +387,6 @@ def algor_ElasticNetCV():
     return render_template('ElasticNetCV.html', **context)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0',port=80)
 
 
