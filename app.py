@@ -449,7 +449,7 @@ def graph():
     # value = "13" > 变量关系组图pairplot < / option >
     # < option
     # value = "14" > 热力图heatmap < / option >
-    plt.figure()
+    plt.figure(figsize=(16,8))
 
     if graph == '1':#箱线图boxplot'
         ax = sns.boxplot(x=x, y=y, hue=z,data=df)
@@ -458,7 +458,7 @@ def graph():
     elif graph == '3':#'散点图striplot':
         ax = sns.stripplot(x=x, y=y, data=df, hue=z,jitter=True)
     elif graph == '4':#'带分布的散点图swarmplot':
-        ax = sns.swarmplot(x=x, y=y, data=df, hue=z, jitter=True)
+        ax = sns.swarmplot(x=x, y=y, data=df, hue=z)
     elif graph == '5':#'条形图barplot':
         ax = sns.barplot(x=x, y=y, hue=z, data=df, ci=0)
     elif graph == '6':#'计数的直方图countplot':
@@ -476,7 +476,10 @@ def graph():
     elif graph == '12':#'双变量关系图jointplot':
         ax = sns.jointplot(x=x, y=y, data=df, kind="reg")
     elif graph == '13':#'变量关系组图pairplot':
-        ax = sns.pairplot(df, hue=z)
+        try:
+            ax = sns.pairplot(df, hue=z)
+        except:
+            ax = sns.pairplot(df, hue=z, diag_kind='hist')
     elif graph == '14':#'热力图heatmap':
         ax = sns.heatmap(df.corr())
     else:
@@ -488,6 +491,7 @@ def graph():
         ax.set_title(graph_title)
         ax.set_xlabel(x_title)
         ax.set_ylabel(y_title)
+        plt.setp(ax.get_xticklabels(), rotation=45)
     except:
         pass
         # ax.legend()

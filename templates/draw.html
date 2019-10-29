@@ -104,7 +104,7 @@
       <option value="4">带分布的散点图swarmplot</option>
       <option value="5">条形图barplot</option>
       <option value="6">计数的直方图countplot</option>
-      <option value="7">两变量关系图factorplot</option>
+{#      <option value="7">两变量关系图factorplot</option>#}
       <option value="8">线性回归图lmplot</option>
       <option value="9">线性回归图regplot</option>
       <option value="10">直方图histplot</option>
@@ -119,6 +119,7 @@
     <label for="x_axis">x轴</label>
         <select class="form-control" id="x_axis" name="x_axis" disabled >
         <option style='display: none'></option>
+            <option> </option>
             {% for col in columns %}
                       <option>{{ col }}</option>
             {% endfor %}
@@ -128,6 +129,7 @@
     <label for="y_axis">y轴</label>
         <select class="form-control" id="y_axis" name="y_axis" disabled>
         <option style='display: none'></option>
+        <option> </option>
             {% for col in columns %}
                       <option>{{ col }}</option>
             {% endfor %}
@@ -137,6 +139,7 @@
     <label for="z_axis">分类</label>
          <select class="form-control" id="z_axis" name="z_axis" disabled>
          <option style='display: none'></option>
+         <option> </option>
             {% for col in columns %}
                       <option value="{{ col }}">{{ col }}</option>
             {% endfor %}
@@ -196,6 +199,12 @@ document.getElementById("_submit").onclick = function(event) {
     req.onload = function () {
         console.log(this)
         if (this.status === 200) {
+            $("#x_axis").empty();
+            $("#y_axis").empty();
+            $("#z_axis").empty();
+            $("#x_axis").append("<option></option>");
+            $("#y_axis").append("<option></option>");
+            $("#z_axis").append("<option></option>");
 
             alert('上传成功')
             json=JSON.parse(this.responseText)
