@@ -1,0 +1,320 @@
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>作图</title>
+<!-- for-mobile-apps -->
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="keywords" content="" />
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+
+	<!-- //css files -->
+
+	<!-- google fonts -->
+	<link href="http://fonts.googleapis.com/css?family=Alegreya+Sans:100,100i,300,300i,400,400i,500,500i,700,700i,800,800i,900,900i" rel="stylesheet">
+    <link type="text/css" href="{{ url_for('static',filename="css/fire.css") }}" rel="stylesheet" />
+	<!-- //google fonts -->
+
+</head>
+<body>
+
+<!-- //header -->
+<header style="background: #f8f9fa;height:200px;border-bottom:2px solid #ececf6">
+	<div class="container">
+		<!-- nav -->
+		<nav class="py-4 d-md-flex">
+			<div id="logo" class="container">
+                <h1> <a href="{{ url_for('index') }}"><span class="fa fa-eercast" aria-hidden="true"></span>1.Machine Learning>></a></h1>
+				<h1> <a href=""><span class="fa fa-eercast" aria-hidden="true"></span>2.数据可视化>></a></h1>
+			</div>
+
+
+			<ul class="menu" style="width:200px">
+				<li class="mr-lg-4 mr-2 active"><a href="{{ url_for('index') }}" >Home</a></li>
+{#				<li class="mr-lg-4 mr-2"><a href="#auto">Auto</a></li>#}
+{#				<li class="mr-lg-4 mr-2"><a href="#ideas">Mantual</a></li>#}
+{#				<li class="mr-lg-4 mr-2"><a href="#pricing">使用说明(暂无）</a></li>#}
+				<li class="mr-lg-4 mr-2"><p onmouseover="over()" onmouseout = "out()" style="color:dodgerblue">Contact</p>
+                    <img src="{{ url_for('static',filename='example/wechat.png') }}" style="display:none;width:200px;" id="contact_img"/>
+                </li>
+			</ul>
+{#			<div class="login-icon mt-2">#}
+{#				<a class="user" href="contact.html">Start Project</a>#}
+{#			</div>#}
+		</nav>
+		<!-- //nav -->
+	</div>
+
+</header>
+{#    <hr style="background: #f8f9fa">#}
+<!-- //header -->
+
+
+<!-- 数据上传和模型缺省使用 -->
+<section  id="auto" style="background: #fff;margin-top: 20px">
+	<div class="container">
+		<div class="banner-text">
+			<div class="slider-info">
+
+                <form action="/upload" method="post" enctype="multipart/form-data" style="width:500px">
+                    <h2>请上传csv格式的数据文件</h2>
+                    <h4>     注意事项：</h4>
+                    <div>
+                        <p>1.不同的图形对于x轴和y轴有不同的数据要求，例如箱线图需要x轴和y轴分别对应一个离散变量和连续变量。</p>
+                        <hr>
+                        <p>
+                        <input type="file" name="file" class="btn">
+                        <input type =submit id="_submit" value="上传">
+                        <br>
+
+                        </p>
+                    </div>
+
+
+                </form>
+
+
+				</div>
+            </div>
+        </div>
+
+
+<div class="container">
+    <div class="container">
+        <img src="" style="display:none;float:right;width:500px;" id="graph_img"/>
+        <a href="{{url_for('static',filename='output/output.png')}}" download="output.png" style="float:right;display: none" id="download_img"><img border="0" src="" alt="图片下载" ></a>
+    </div>
+<form action="/graph" method="post" style="width:500px">
+
+    <label for="graph">作图类型</label>
+        <select class="form-control" id="graph" name="graph" onchange="graph_change()" required>
+            <option style='display: none'></option>
+      <option value="1">箱线图boxplot</option>
+      <option value="2">小提琴图violinplot</option>
+      <option value="3">散点图striplot</option>
+      <option value="4">带分布的散点图swarmplot</option>
+      <option value="5">条形图barplot</option>
+      <option value="6">计数的直方图countplot</option>
+      <option value="7">两变量关系图factorplot</option>
+      <option value="8">线性回归图lmplot</option>
+      <option value="9">线性回归图regplot</option>
+      <option value="10">直方图histplot</option>
+      <option value="11">核密度图kdeplot</option>
+      <option value="12">双变量关系图jointplot</option>
+      <option value="13">变量关系组图pairplot</option>
+      <option value="14">热力图heatmap</option>
+            </select>
+
+<br>
+
+    <label for="x_axis">x轴</label>
+        <select class="form-control" id="x_axis" name="x_axis" disabled >
+        <option style='display: none'></option>
+            {% for col in columns %}
+                      <option>{{ col }}</option>
+            {% endfor %}
+
+        </select>
+
+    <label for="y_axis">y轴</label>
+        <select class="form-control" id="y_axis" name="y_axis" disabled>
+        <option style='display: none'></option>
+            {% for col in columns %}
+                      <option>{{ col }}</option>
+            {% endfor %}
+
+        </select>
+
+    <label for="z_axis">分类</label>
+         <select class="form-control" id="z_axis" name="z_axis" disabled>
+         <option style='display: none'></option>
+            {% for col in columns %}
+                      <option value="{{ col }}">{{ col }}</option>
+            {% endfor %}
+
+        </select>
+
+    <br>
+    <input type="text" id="graph_title" name="graph_title"  placeholder="图表标题" value=""/>
+    <input type="text" id="x_title" name="x_title"  placeholder="x轴标题" value=""/>
+    <input type="text" id="y_title" name="y_title"  placeholder="y轴标题" value=""/>
+
+    <br>
+    <br>
+    <input type =submit id="submit_graph" value="生成图片">
+
+
+
+</form>
+
+</div>
+
+
+</section>
+
+
+
+</body>
+</html>
+
+<script>
+    $('#myModal').on('shown.bs.modal', function () {
+  $('#myInput').focus()
+})
+function openLogin(){
+document.getElementById("win").style.display="";
+}
+function closeLogin(){
+document.getElementById("win").style.display="none";
+}
+</script>
+
+
+
+
+<script>
+document.getElementById("_submit").onclick = function(event) {
+    //取消掉默认的form提交方式
+    if (event.preventDefault) event.preventDefault();
+    else event.returnValue = false;                           //对于IE的取消方式
+
+    var formDOM = document.getElementsByTagName("form")[0];
+    //将form的DOM对象当作FormData的构造函数
+    var formData = new FormData(formDOM);
+    var req = new XMLHttpRequest();
+    req.open("POST", "upload");
+    //请求完成
+    req.onload = function () {
+        console.log(this)
+        if (this.status === 200) {
+
+            alert('上传成功')
+            json=JSON.parse(this.responseText)
+            var sel_x = document.getElementById('x_axis')
+            var sel_y = document.getElementById('y_axis')
+            var sel_z = document.getElementById('z_axis')
+            for(var i=0; i<Object.keys(json).length; i++)
+            {
+                sel_x.options.add(new Option(json[i], json[i]))
+                sel_y.options.add(new Option(json[i], json[i]))
+                sel_z.options.add(new Option(json[i], json[i]));
+            }
+            //对请求成功的处理
+
+        } else {
+            alert('上传失败')
+        }
+    }
+    //将form数据发送出去
+    req.send(formData);
+    //避免内存泄漏
+    req = null;
+
+}
+
+document.getElementById("submit_graph").onclick = function(event2) {
+    //取消掉默认的form提交方式
+    if (event2.preventDefault) event2.preventDefault();
+    else event2.returnValue = false;                           //对于IE的取消方式
+
+    var formDOM = document.getElementsByTagName("form")[1];
+    //将form的DOM对象当作FormData的构造函数
+    var formData = new FormData(formDOM);
+    var req = new XMLHttpRequest();
+    req.open("POST", "graph");
+    //请求完成
+    req.onload = function () {
+        console.log(this)
+        if (this.status === 200) {
+            if (this.responseText=="请上传文件"){alert('请上传文件')}
+            else{
+                alert('生成图片成功')
+                var img_url = this.responseText;
+
+                graph_img = document.getElementById("graph_img");
+                graph_img.src="/static/output/"+img_url+".png";
+                graph_img.style.display = "block";
+
+                download_img = document.getElementById("download_img");
+                download_img.href="/static/output/"+img_url+".png";
+                download_img.style.display = "block";
+                    //对请求成功的处理
+                } }
+        else {alert('生成图片失败，请查看轴标签是否选择有误，数据集是否存在空值。')}
+    }
+    //将form数据发送出去
+    req.send(formData);
+    //避免内存泄漏
+    req = null;
+
+}
+
+</script>
+
+
+
+
+<script>
+    function over(){
+        img = document.getElementById("contact_img");
+        img.style.display = "block";
+    }
+
+    function out(){
+        img = document.getElementById("contact_img");
+        img.style.display = "none";
+    }
+
+    function isInArray(arr,value){
+    for(var i = 0; i < arr.length; i++){
+        if(value === arr[i]){
+            return true;
+        }
+    }
+    return false;
+    }
+
+    function graph_change() {
+        document.getElementById("x_axis").disabled = "true";
+        document.getElementById("y_axis").disabled = "true";
+        document.getElementById("z_axis").disabled = "true";
+        var obj = document.getElementById("graph").value;
+        var col_x_y_z = ['1','2','3','4','5','8']
+        var col_x_z = ['6']
+        var col_x_y = ['9','11','12']
+        var col_z =['13']
+        var col_x = ['10']
+        if (isInArray(col_x_y_z,obj)) {
+            document.getElementById("x_axis").disabled = "";
+            document.getElementById("y_axis").disabled = "";
+            document.getElementById("z_axis").disabled = "";
+        }//去除disabled
+        else if (isInArray(col_x_z,obj)) {
+            document.getElementById("x_axis").disabled = "";
+            document.getElementById("z_axis").disabled = "";
+        }
+        else if (isInArray(col_x_y,obj)) {
+            document.getElementById("x_axis").disabled = "";
+            document.getElementById("y_axis").disabled = "";
+        }
+        else if (isInArray(col_z,obj)) {
+            document.getElementById("z_axis").disabled = "";
+        }
+        else if (isInArray(col_x,obj)) {
+            document.getElementById("x_axis").disabled = "";
+        }
+        else {
+        }
+    }
+</script>
+
+

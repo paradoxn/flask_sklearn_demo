@@ -30,7 +30,8 @@
 		<!-- nav -->
 		<nav class="py-4 d-md-flex">
 			<div id="logo" class="container">
-				<h1> <a href="index.html"><span class="fa fa-eercast" aria-hidden="true"></span>Machine Learning</a></h1>
+				<h1> <a href=''><span class="fa fa-eercast" aria-hidden="true"></span>1.Machine Learning>></a></h1>
+                <h1> <a href={{ url_for('draw') }}><span class="fa fa-eercast" aria-hidden="true"></span>2.数据可视化>></a></h1>
 			</div>
 
 {#火#}
@@ -215,6 +216,7 @@
                         <p></p>
                         <p>以下为示范数据：</p>
                         <p>数据源为泰坦尼克号乘客存活数据，根据前面几个纬度（Pclass：几等舱，sex：性别，fare：船票价格）等预测最后一个Survived（0:存活，1：死亡）的值。</p>
+                        <hr>
                         <a href="{{url_for('static',filename='example/example.csv')}}" download="example.csv"><img border="0" src="" alt="例子下载"></a>
 
                     </div>
@@ -225,7 +227,7 @@
                     <br>
                     <div>
                         <p>
-                        <input type="file" name="file" class="btn">
+                        <input type="file" name="file" class="btn" accept="text/csv">
                         <input type =submit id="_submit" value="上传">
                         <br>
 
@@ -1175,6 +1177,7 @@ document.getElementById("_submit").onclick = function(event) {
     req.onload = function () {
         if (this.status === 200) {
             alert('上传成功')
+
             //对请求成功的处理
         } else {
             alert('上传失败')
@@ -1243,6 +1246,9 @@ document.getElementById("_submit").onclick = function(event) {
             complete: function (result) {
                 console.log(result)
                 var json=result.responseJSON
+                if (typeof(json)=="undefined"){
+                    alert('请检查上传数据是否有误，是否格式有误，是否存在空值。');
+                }else if (result.responseText=="请上传文件"){alert('请上传文件')}
                 alert(json.content)
                 delete json.content;
                 {#var json2=JSON.parse(result.responseText)#}

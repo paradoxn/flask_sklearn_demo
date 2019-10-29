@@ -18,10 +18,18 @@ from sklearn.linear_model import ElasticNetCV
 from decorators import upload_file
 from flask import Response, json
 import graphviz
-
+import seaborn as sns
+import matplotlib.pyplot as plt
+import time
 
 app = Flask(__name__)
 app.config.from_object(config)
+
+sns.set()
+sns.set_palette("muted")
+
+plt.rcParams['font.family'] = ['Arial Unicode MS'] #用来正常显示中文标签
+plt.rcParams['axes.unicode_minus'] = False #用来正常显示负号
 
 def onehot(df):
     le = LabelEncoder()
@@ -67,7 +75,13 @@ def upload():
         file_name = upload_path + secure_filename(f.filename)
         session['file'] = file_name
         f.save(file_name)
-        return file_name
+        df=pd.read_csv(file_name)
+        columns=df.columns.values
+        rep_dict = {}
+        for i in range(0,len(columns)):
+            rep_dict[i]=columns[i]
+        return Response(json.dumps(rep_dict),content_type='application/json')
+
     else:
         return 'false'
   #      return redirect(url_for('index'))
@@ -386,7 +400,106 @@ def algor_ElasticNetCV():
     }
     return render_template('ElasticNetCV.html', **context)
 
+@app.route('/draw', methods=['get'])
+def draw():
+    return render_template('draw.html')
+
+
+@app.route('/graph', methods=['POST'])
+@upload_file
+def graph():
+    parms = request.form.to_dict()
+    base_path = path.abspath(path.dirname(__file__))
+    randoms=str(time.time()).replace('.','_')
+    upload_path = path.join(base_path, 'static/output/%s.png'%randoms)
+
+    for j,k in parms.items():
+        if k =='':
+            parms[j] = None
+
+    df = pd.read_csv(session.get('file'))
+    graph = parms.get('graph')
+    x,y,z,z2 = parms.get('x_axis'),parms.get('y_axis'),parms.get('z_axis'),parms.get('z2_axis')
+    graph_title,x_title,y_title=parms.get('graph_title'),parms.get('x_title'),parms.get('y_title')
+    # < option
+    # value = "1" > 箱线图boxplot < / option >
+    # < option
+    # value = "2" > 散点图striplot < / option >
+    # < option
+    # value = "3" > 小提琴图violinplot < / option >
+    # < option
+    # value = "4" > 带分布的散点图swarmplot < / option >
+    # < option
+    # value = "5" > 直方图barplot < / option >
+    # < option
+    # value = "6" > 计数的直方图countplot < / option >
+    # < option
+    # value = "7" > 两变量关系图factorplot < / option >
+    # < option
+    # value = "8" > 线性回归图lmplot < / option >
+    # < option
+    # value = "9" > 线性回归图regplot < / option >
+    # < option
+    # value = "10" > 直方图histplot < / option >
+    # < option
+    # value = "11" > 核密度图kdeplot < / option >
+    # < option
+    # value = "12" > 双变量关系图jointplot < / option >
+    # < option
+    # value = "13" > 变量关系组图pairplot < / option >
+    # < option
+    # value = "14" > 热力图heatmap < / option >
+    plt.figure()
+
+    if graph == '1':#箱线图boxplot'
+        ax = sns.boxplot(x=x, y=y, hue=z,data=df)
+    elif graph == '2':#小提琴图violinplot':
+        ax = sns.violinplot(x=x, y=y, hue=z,data=df, split=True)
+    elif graph == '3':#'散点图striplot':
+        ax = sns.stripplot(x=x, y=y, data=df, hue=z,jitter=True)
+    elif graph == '4':#'带分布的散点图swarmplot':
+        ax = sns.swarmplot(x=x, y=y, data=df, hue=z, jitter=True)
+    elif graph == '5':#'条形图barplot':
+        ax = sns.barplot(x=x, y=y, hue=z, data=df, ci=0)
+    elif graph == '6':#'计数的直方图countplot':
+        ax = sns.countplot(x=x, hue=z, data=df)
+    elif graph == '7':#'两变量关系图factorplot':
+        pass
+    elif graph == '8':#'线性回归图lmplot':
+        ax = sns.lmplot(x=x, y=y, hue=z,col=z2, data=df, aspect=.4, x_jitter=.1,col_wrap=3)
+    elif graph == '9':#'线性回归图regplot':
+        ax = sns.regplot(x=x, y=y, color="g", marker="+",data=df)
+    elif graph == '10':#'直方图histplot':
+        ax = sns.distplot(df[x])
+    elif graph == '11':#'核密度图kdeplot':
+        ax = sns.kdeplot(x=x, y=y, shade=True,data=df)
+    elif graph == '12':#'双变量关系图jointplot':
+        ax = sns.jointplot(x=x, y=y, data=df, kind="reg")
+    elif graph == '13':#'变量关系组图pairplot':
+        ax = sns.pairplot(df, hue=z)
+    elif graph == '14':#'热力图heatmap':
+        ax = sns.heatmap(df.corr())
+    else:
+        return '请选择图形'
+
+    print(x_title,y_title)
+    # if graph not in ['13']:
+    try:
+        ax.set_title(graph_title)
+        ax.set_xlabel(x_title)
+        ax.set_ylabel(y_title)
+    except:
+        pass
+        # ax.legend()
+
+    try:
+        ax.figure.savefig(upload_path,dpi=200)
+    except:
+        ax.savefig(upload_path, dpi=200)
+
+    return randoms
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0',port=80)
+    app.run(debug=False,host='0.0.0.0',port=80)
 
 
